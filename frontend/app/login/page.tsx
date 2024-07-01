@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function login() {
 
     return (
@@ -6,8 +8,8 @@ export default function login() {
             <div className="text-center text-4xl ">Log In</div>
             <input id="lusername" type="text" placeholder="username" className="p-3 mt-8 mx-3 bg-gray-100 border focus:border-blue-500 focus:border-2 outline-none"/>
             <input id="lpassword" type="password" placeholder="password" className="p-3 mx-3 bg-gray-100 border focus:border-blue-500 focus:border-2 outline-none"/>
-            <div className="mx-5 text-sm font-light text-gray-600">Don't have an account? Sign up</div>
-            <button type="submit" className="bg-blue-500 py-2 px-4 mt-8 text-white rounded-lg text-xl">Login</button>
+            <div className="mx-5 text-sm font-light text-gray-600">Don't have an account? <Link href="signup" className="text-blue-500 underline">Signup</Link></div>
+            <button type="submit" className="bg-blue-500 py-2 px-4 mt-8 text-white rounded-lg text-xl mb-4">Login</button>
         </form>
     );
 }
