@@ -1,3 +1,4 @@
+import uuid
 from django.shortcuts import render
 from django.http import FileResponse
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +9,7 @@ from rest_framework import status
 from .serializers import ImageUploadSerializer
 import os
 
+from .ml.main import generate_presentation_from_images
 
 # Create your views here.
 
@@ -19,11 +21,19 @@ class ImagesToPptView(APIView):
         serializer = ImageUploadSerializer(data=request.data)
         if serializer.is_valid():
             images = serializer.validated_data['images']
-            # Generate ppt from images here using the model
-            file_path = os.path.join('media','presentation.pptx')
+            file_name = f"{uuid.uuid4()}.pptx"
+            file_path = os.path.join('media',file_name)
+
+            try:
+                generate_presentation_from_images(images,file_path)
+            except Exception as e:
+                print("Error:",str(e))
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             if os.path.exists(file_path):
                 response = FileResponse(open(file_path,'rb'), content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation')
                 response['Content-Disposition'] = 'attachment; filename=presentation.pptx'
+                print("Returning response")
                 return response
-            return Response("Images Validated but path invalid", status.HTTP_200_OK)
+            print("presentation not generated")
+            return Response({"error":"Presentation not generated"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
