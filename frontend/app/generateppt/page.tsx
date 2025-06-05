@@ -2,23 +2,31 @@
 
 import API from "@/lib/api";
 import axios, { AxiosRequestConfig, ResponseType } from "axios";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
+import { useToast } from "@/context/ToastContext";
 
 export default function GeneratePPT() {
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
+  useEffect(() => {
+    if (error) {
+      alert(error);
+    }
+  }, [error]);
+
   const handleImagePPTFormRequest = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     setError("");
+    setIsLoading(true);
 
     const formData = new FormData(e.target as HTMLFormElement);
     const images = formData.getAll("images");
     const access_token = localStorage.getItem("ink_ppt_access_token");
 
     if (images.length === 0) {
-      setError("Please select at least one image.");
+      showToast("Please select at least one image.", "warning");
       setIsLoading(false);
       return;
     }
@@ -26,7 +34,7 @@ export default function GeneratePPT() {
     const config: AxiosRequestConfig = {
       responseType: "arraybuffer" as ResponseType,
       headers: {
-        Authorization: "Bearer " + access_token,
+        Authorization: `Bearer ${access_token}`,
       },
     };
 
@@ -45,10 +53,13 @@ export default function GeneratePPT() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        showToast("PPT generated successfully!", "success");
+      } else {
+        showToast("Failed to generate PPT. Please try again.", "error");
       }
     } catch (err) {
-      setError("Failed to generate PPT. Please try again.");
-      console.log(err);
+      showToast("An error occurred while generating the PPT. Please try again.", "error");
+      console.error(err);
     } finally {
       setIsLoading(false);
     }

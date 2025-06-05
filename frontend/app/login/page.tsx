@@ -6,12 +6,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { useState, FormEvent } from "react";
+import { useToast } from "@/context/ToastContext";
 
-export default function login() {
-
+export default function Login() {
     const router = useRouter();
+    const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
+
     const handleLoginFormRequest = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.target as HTMLFormElement)
@@ -25,11 +27,13 @@ export default function login() {
             if(res.data.access)
             {
                 localStorage.setItem("ink_ppt_access_token",res.data.access)
-                router.push('/generateppt')
+                showToast("Login successful!", "success")
+                setTimeout(() => router.push('/generateppt'), 1000);
+            } else {
+                showToast("User not registered. Please sign up.", "warning")
             }
         } catch(err) {
-            console.log(err)
-
+            showToast("Login failed. Please try again.", "error")
         }
     }
 
@@ -113,12 +117,5 @@ export default function login() {
         </form>
       </div>
     </div>
-        // <form className="flex flex-col mx-auto p-4 max-w-[500px] m-4 gap-4 mt-32 rounded-xl bg-white border-2" onSubmit={(e) => handleLoginFormRequest(e)}>
-        //     <div className="text-center text-4xl ">Log In</div>
-        //     <input id="lusername" name="lusername" type="text" placeholder="username" className="p-3 mt-8 mx-3 bg-gray-100 border focus:border-blue-500 focus:border-2 outline-none"/>
-        //     <input id="lpassword" name="lpassword" type="password" placeholder="password" className="p-3 mx-3 bg-gray-100 border focus:border-blue-500 focus:border-2 outline-none"/>
-        //     <div className="mx-5 text-sm font-light text-gray-600">Don't have an account? <Link href="signup" className="text-blue-500 underline">Signup</Link></div>
-        //     <button type="submit" className="bg-blue-500 py-2 px-4 mt-8 text-white rounded-lg text-xl mb-4">Login</button>
-        // </form>
     );
 }

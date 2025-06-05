@@ -4,16 +4,25 @@ import API from "@/lib/api";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
+import { useToast } from "@/context/ToastContext";
 
-export default function signup() {
-
+export default function Signup() {
     const router = useRouter()
+    const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
+
+    useEffect(() => {
+        if (error) {
+            alert(error);
+        }
+    }, [error]);
+
     const handleSignupFormRequest = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setError("");
         const formData = new FormData(e.target as HTMLFormElement)
         const username = formData.get('username')
         const email = formData.get('email')
@@ -25,15 +34,22 @@ export default function signup() {
             const res = await axios.post(API.SIGNUP, data)
             if(res.data.success)
             {
-                router.push('/login')
+                showToast("Signup successful! Redirecting to login...", "success");
+                setTimeout(() => router.push('/login'), 1000);
+            }
+            else
+            {
+                showToast("Signup failed. Please check your details.", "error");
             }
         } catch(err) {
-            console.log(err)
+            showToast("An error occurred during signup. Please try again.", "error");
+            console.error(err);
         }
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+        <>
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <form
           onSubmit={handleSignupFormRequest}
@@ -126,13 +142,6 @@ export default function signup() {
         </form>
       </div>
     </div>
-        // <form className="flex flex-col mx-auto p-4 max-w-[500px] m-4 gap-4 mt-32 rounded-xl bg-white border-2" onSubmit={handleSignupFormRequest}>
-        //     <div className="text-center text-4xl">Sign Up</div>
-        //     <input id="email" name="email" type="email" placeholder="Email" className="p-3 mt-8 mx-3 bg-gray-100 border focus:border-blue-500 focus:border-2 outline-none"/>
-        //     <input id="username" name="username" type="text" placeholder="Username" className="p-3 mx-3 bg-gray-100 border focus:border-blue-500 focus:border-2 outline-none"/>
-        //     <input id="password" name="password" type="password" placeholder="Password" className="p-3 mx-3 bg-gray-100 border focus:border-blue-500 focus:border-2 outline-none"/>
-        //     <div className="mx-5 text-sm font-light text-gray-600">Already have an account? <Link href="login" className="text-blue-500 underline">Login</Link></div>
-        //     <button type="submit" className="bg-blue-500 py-2 px-4 mt-8 text-white rounded-lg text-xl mb-4">Signup</button>
-        // </form>
+        </>
     );
 }
